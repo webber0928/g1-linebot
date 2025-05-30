@@ -1,0 +1,17 @@
+[Unit]
+Description=LINE Bot FastAPI Service
+After=network.target
+
+[Service]
+User=dilab
+WorkingDirectory=/home/dilab/DI-LAB/linebot
+Environment="PATH=/home/dilab/DI-LAB/linebot/venv/bin"
+ExecStart=/home/dilab/DI-LAB/linebot/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
