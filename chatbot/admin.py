@@ -3,7 +3,9 @@ from .models import Message, SkipKeyword, SystemPromptRule
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('user_id', 'role', 'content', 'timestamp')
+    list_display = ('user_id', 'role', 'content', 'timestamp', 'session_id')
+    search_fields = ("user_id", "content", "session_id")
+    list_filter = ("session_id",)
 
 @admin.register(SkipKeyword)
 class SkipKeywordAdmin(admin.ModelAdmin):

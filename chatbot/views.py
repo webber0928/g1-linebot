@@ -76,8 +76,11 @@ def handle_message(event):
     system_prompt_obj = SystemPromptRule.objects.filter(trigger_text__iexact=user_message).first()
     if system_prompt_obj:
         system_prompt = system_prompt_obj.system_prompt
+        session_id = uuid.uuid4()  # 🔥 新課程，自動開新 session
     else:
         system_prompt = "要簡短回答，不要超過50字，中文要用zh-TW。"
+        latest_msg = Message.objects.filter(user_id=user_id).order_by("-timestamp").first()
+        session_id = latest_msg.session_id if latest_msg else uuid.uuid4()
 
     messages = [{"role": "system", "content": system_prompt}]
 
