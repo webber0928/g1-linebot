@@ -152,3 +152,7 @@ JAZZMIN_SETTINGS = {
         "chatbot": "fas fa-robot",
     },
 }
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://g1.dilab.online",
+]
