@@ -27,12 +27,25 @@ openai.api_key = OPENAI_API_KEY
 
 MAX_HISTORY = 10
 
-def get_user_history(user_id):
-    messages = Message.objects.filter(user_id=user_id).order_by("timestamp")
+def get_user_history(user_id, session_id):
+    messages = Message.objects.filter(user_id=user_id, session_id=session_id).order_by("timestamp")
     return [{"role": m.role, "content": m.content} for m in messages][-MAX_HISTORY*2:]
 
-def add_message(user_id, role, content, system_prompt_rule_id=None):
-    Message.objects.create(user_id=user_id, role=role, content=content, system_prompt_rule=system_prompt_rule_id)
+def add_message(user_id, role, content, session_id, system_prompt_rule_id=None):
+    system_prompt_rule = None
+    if system_prompt_rule_id:
+        try:
+            system_prompt_rule = SystemPromptRule.objects.get(id=system_prompt_rule_id)
+        except SystemPromptRule.DoesNotExist:
+            pass  # 安全防呆，不讓 get 出錯導致整個掛掉
+
+    Message.objects.create(
+        user_id=user_id,
+        role=role,
+        content=content,
+        session_id=session_id,
+        system_prompt_rule=system_prompt_rule
+    )
 
 def clear_history(user_id):
     Message.objects.filter(user_id=user_id).delete()
@@ -65,7 +78,12 @@ def handle_message(event):
         return
 
     if user_message.lower() == "/history":
-        history = get_user_history(user_id)
+        latest_msg = Message.objects.filter(user_id=user_id).order_by("-timestamp").first()
+        if latest_msg:
+            session_id = latest_msg.session_id
+            history = get_user_history(user_id, session_id)
+        else:
+            history = []
         reply = "目前沒有紀錄喔～" if not history else (
             "最近的對話紀錄：\n\n" + "\n".join([f"[{h['role']}] {h['content']}" for h in history])
         )
@@ -89,10 +107,10 @@ def handle_message(event):
             system_prompt_rule_id = None
         session_id = latest_msg.session_id if latest_msg else uuid.uuid4()
 
-    add_message(user_id, "user", user_message, system_prompt_rule_id)
+    add_message(user_id, "user", user_message, session_id, system_prompt_rule_id)
 
     messages = [{"role": "system", "content": system_prompt}]
-    messages += get_user_history(user_id)
+    messages += get_user_history(user_id, session_id)
 
     try:
         response = openai.chat.completions.create(
@@ -100,7 +118,7 @@ def handle_message(event):
             messages=messages
         )
         reply = response.choices[0].message.content.strip()
-        add_message(user_id, "assistant", reply, system_prompt_rule_id)
+        add_message(user_id, "assistant", reply, session_id, system_prompt_rule_id)
     except Exception as e:
         reply = f"抱歉，我出錯了：{str(e)}"
 
