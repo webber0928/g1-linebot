@@ -141,6 +141,7 @@ JAZZMIN_SETTINGS = {
     "site_header": "LineBot系統",
     "site_brand": "AI LineBot",
     "site_logo": "img/logo.png",  # 你也可以放本地 static
+    "custom_css": "css/custom_admin.css",
     "welcome_sign": "歡迎來到管理後台",
     "copyright": "© 2025 Lover",
     "show_sidebar": True,

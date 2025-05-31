@@ -1,0 +1,8 @@
+/* 自訂 logo 大小 */
+.login-logo img {
+    max-height: 100px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+}
