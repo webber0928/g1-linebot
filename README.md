@@ -26,3 +26,9 @@ python manage.py createsuperuser
 
 # 建立完成後，可以用這個帳號登入 http://localhost:8000/admin/
 ```
+
+## 正式站部屬
+```
+# 靜態資源轉移
+python manage.py collectstatic
+```
