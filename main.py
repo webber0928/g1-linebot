@@ -80,6 +80,12 @@ def handle_message(event):
     user_id = event.source.user_id
     user_message = event.message.text.strip()
 
+    if user_message.lower() == "你好":
+        # clear_history(user_id)
+        # reply = "對話紀錄已清除，從頭開始吧！"
+        # line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
+        return
+    
     if user_message.lower() == "/reset":
         clear_history(user_id)
         reply = "對話紀錄已清除，從頭開始吧！"
