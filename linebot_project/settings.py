@@ -39,6 +39,7 @@ ALLOWED_HOSTS = ['g1.dilab.online', 'localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
+    "jazzmin",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -114,13 +115,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+LANGUAGE_CODE = 'zh-hant'
+TIME_ZONE = 'Asia/Taipei'
 USE_I18N = True
-
+USE_L10N = True
 USE_TZ = True
 
 
@@ -128,8 +126,26 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATICFILES_DIRS = [
+    BASE_DIR / "static",  # 或其他你放 logo 的目錄
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+JAZZMIN_SETTINGS = {
+    "site_title": "管理後台",
+    "site_header": "LineBot系統",
+    "site_brand": "AI LineBot",
+    "site_logo": "img/logo.png",  # 你也可以放本地 static
+    "welcome_sign": "歡迎來到管理後台",
+    "copyright": "© 2025 Lover",
+    "show_sidebar": True,
+    "navigation_expanded": True,
+    "hide_apps": [],
+    "icons": {
+        "auth": "fas fa-users-cog",
+        "chatbot": "fas fa-robot",
+    },
+}
