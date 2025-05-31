@@ -5,7 +5,7 @@ from .models import Message, SkipKeyword, SystemPromptRule
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('user_id', 'role', 'content', 'timestamp', 'session_id')
     search_fields = ("user_id", "content", "session_id")
-    list_filter = ("session_id",)
+    list_filter = ("session_id", "user_id")
 
 @admin.register(SkipKeyword)
 class SkipKeywordAdmin(admin.ModelAdmin):

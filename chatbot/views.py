@@ -7,6 +7,7 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from .models import Message, SkipKeyword, SystemPromptRule
 import os
 import openai
+import uuid
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -30,8 +31,8 @@ def get_user_history(user_id):
     messages = Message.objects.filter(user_id=user_id).order_by("timestamp")
     return [{"role": m.role, "content": m.content} for m in messages][-MAX_HISTORY*2:]
 
-def add_message(user_id, role, content):
-    Message.objects.create(user_id=user_id, role=role, content=content)
+def add_message(user_id, role, content, system_prompt_rule_id=None):
+    Message.objects.create(user_id=user_id, role=role, content=content, system_prompt_rule=system_prompt_rule_id)
 
 def clear_history(user_id):
     Message.objects.filter(user_id=user_id).delete()
@@ -71,19 +72,26 @@ def handle_message(event):
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
-    add_message(user_id, "user", user_message)
-
     system_prompt_obj = SystemPromptRule.objects.filter(trigger_text__iexact=user_message).first()
     if system_prompt_obj:
         system_prompt = system_prompt_obj.system_prompt
-        session_id = uuid.uuid4()  # 🔥 新課程，自動開新 session
+        session_id = uuid.uuid4()
+        system_prompt_rule_id = system_prompt_obj.id
     else:
-        system_prompt = "要簡短回答，不要超過50字，中文要用zh-TW。"
         latest_msg = Message.objects.filter(user_id=user_id).order_by("-timestamp").first()
+        if latest_msg and latest_msg.system_prompt_rule:
+            # 取到 SystemPromptRule instance 的 system_prompt
+            system_prompt = latest_msg.system_prompt_rule.system_prompt
+            system_prompt_rule_id = latest_msg.system_prompt_rule.id
+        else:
+            # 如果沒紀錄，fallback 給一個預設的 prompt
+            system_prompt = "要簡短回答，不要超過50字，中文要用zh-TW。"
+            system_prompt_rule_id = None
         session_id = latest_msg.session_id if latest_msg else uuid.uuid4()
 
-    messages = [{"role": "system", "content": system_prompt}]
+    add_message(user_id, "user", user_message, system_prompt_rule_id)
 
+    messages = [{"role": "system", "content": system_prompt}]
     messages += get_user_history(user_id)
 
     try:
@@ -92,7 +100,7 @@ def handle_message(event):
             messages=messages
         )
         reply = response.choices[0].message.content.strip()
-        add_message(user_id, "assistant", reply)
+        add_message(user_id, "assistant", reply, system_prompt_rule_id)
     except Exception as e:
         reply = f"抱歉，我出錯了：{str(e)}"
 
