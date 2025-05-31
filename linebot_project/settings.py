@@ -39,7 +39,7 @@ ALLOWED_HOSTS = ['g1.dilab.online', 'localhost', '127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    "jazzmin",
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -127,32 +127,32 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "static",  # 或其他你放 logo 的目錄
-    BASE_DIR / "chatbot" / "static",
+    BASE_DIR / 'static',  # 或其他你放 logo 的目錄
+    BASE_DIR / 'chatbot' / 'static',
 ]
-STATIC_ROOT = BASE_DIR / "staticfiles"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 JAZZMIN_SETTINGS = {
-    "site_title": "管理後台",
-    "site_header": "LineBot系統",
-    "site_brand": "AI LineBot",
-    "site_logo": "img/logo.png",  # 你也可以放本地 static
-    "custom_css": "css/custom_admin.css",
-    "welcome_sign": "歡迎來到管理後台",
-    "copyright": "© 2025 Lover",
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    "hide_apps": [],
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "chatbot": "fas fa-robot",
+    'site_title': '管理後台',
+    'site_header': 'LineBot系統',
+    'site_brand': 'AI LineBot',
+    'site_logo': 'img/logo.png',  # 你也可以放本地 static
+    'custom_css': 'css/custom_admin.css',
+    'welcome_sign': '歡迎來到管理後台',
+    'copyright': '© 2025 Lover',
+    'show_sidebar': True,
+    'navigation_expanded': True,
+    'hide_apps': [],
+    'icons': {
+        'auth': 'fas fa-users-cog',
+        'chatbot': 'fas fa-robot',
     },
 }
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://g1.dilab.online",
+    'https://g1.dilab.online',
 ]

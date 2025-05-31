@@ -12,14 +12,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
-LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
+LINE_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 if not LINE_CHANNEL_SECRET or not LINE_CHANNEL_ACCESS_TOKEN:
-    raise Exception("LINE credentials are not set in .env")
+    raise Exception('LINE credentials are not set in .env')
 if not OPENAI_API_KEY:
-    raise Exception("OpenAI API key is not set in .env")
+    raise Exception('OpenAI API key is not set in .env')
 
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
@@ -28,8 +28,8 @@ openai.api_key = OPENAI_API_KEY
 MAX_HISTORY = 10
 
 def get_user_history(user_id, session_id):
-    messages = Message.objects.filter(user_id=user_id, session_id=session_id).order_by("timestamp")
-    return [{"role": m.role, "content": m.content} for m in messages][-MAX_HISTORY*2:]
+    messages = Message.objects.filter(user_id=user_id, session_id=session_id).order_by('timestamp')
+    return [{'role': m.role, 'content': m.content} for m in messages][-MAX_HISTORY*2:]
 
 def add_message(user_id, role, content, session_id, system_prompt_rule_id=None):
     system_prompt_rule = None
@@ -52,15 +52,15 @@ def clear_history(user_id):
 
 @csrf_exempt
 def callback(request):
-    signature = request.headers.get("X-Line-Signature")
-    body = request.body.decode("utf-8")
+    signature = request.headers.get('X-Line-Signature')
+    body = request.body.decode('utf-8')
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        return HttpResponseBadRequest("Invalid signature")
+        return HttpResponseBadRequest('Invalid signature')
 
-    return HttpResponse("OK")
+    return HttpResponse('OK')
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -71,21 +71,21 @@ def handle_message(event):
     if SkipKeyword.objects.filter(text__iexact=user_message).exists():
         return
 
-    if user_message.lower() == "/reset":
+    if user_message.lower() == '/reset':
         clear_history(user_id)
-        reply = "對話紀錄已清除，從頭開始吧！"
+        reply = '對話紀錄已清除，從頭開始吧！'
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
-    if user_message.lower() == "/history":
-        latest_msg = Message.objects.filter(user_id=user_id).order_by("-timestamp").first()
+    if user_message.lower() == '/history':
+        latest_msg = Message.objects.filter(user_id=user_id).order_by('-timestamp').first()
         if latest_msg:
             session_id = latest_msg.session_id
             history = get_user_history(user_id, session_id)
         else:
             history = []
-        reply = "目前沒有紀錄喔～" if not history else (
-            "最近的對話紀錄：\n\n" + "\n".join([f"[{h['role']}] {h['content']}" for h in history])
+        reply = '目前沒有紀錄喔～' if not history else (
+            '最近的對話紀錄：\n\n' + '\n'.join([f"[{h['role']}] {h['content']}" for h in history])
         )
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
@@ -96,29 +96,29 @@ def handle_message(event):
         session_id = uuid.uuid4()
         system_prompt_rule_id = system_prompt_obj.id
     else:
-        latest_msg = Message.objects.filter(user_id=user_id).order_by("-timestamp").first()
+        latest_msg = Message.objects.filter(user_id=user_id).order_by('-timestamp').first()
         if latest_msg and latest_msg.system_prompt_rule:
             # 取到 SystemPromptRule instance 的 system_prompt
             system_prompt = latest_msg.system_prompt_rule.system_prompt
             system_prompt_rule_id = latest_msg.system_prompt_rule.id
         else:
             # 如果沒紀錄，fallback 給一個預設的 prompt
-            system_prompt = "要簡短回答，不要超過50字，中文要用zh-TW。"
+            system_prompt = '要簡短回答，不要超過50字，中文要用zh-TW。'
             system_prompt_rule_id = None
         session_id = latest_msg.session_id if latest_msg else uuid.uuid4()
 
-    add_message(user_id, "user", user_message, session_id, system_prompt_rule_id)
+    add_message(user_id, 'user', user_message, session_id, system_prompt_rule_id)
 
-    messages = [{"role": "system", "content": system_prompt}]
+    messages = [{'role': 'system', 'content': system_prompt}]
     messages += get_user_history(user_id, session_id)
 
     try:
         response = openai.chat.completions.create(
-            model="o4-mini",
+            model='o4-mini',
             messages=messages
         )
         reply = response.choices[0].message.content.strip()
-        add_message(user_id, "assistant", reply, session_id, system_prompt_rule_id)
+        add_message(user_id, 'assistant', reply, session_id, system_prompt_rule_id)
     except Exception as e:
         reply = f"抱歉，我出錯了：{str(e)}"
 
