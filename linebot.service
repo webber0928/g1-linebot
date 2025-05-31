@@ -1,12 +1,17 @@
 [Unit]
-Description=LINE Bot FastAPI Service
+Description=LINE Bot Django Service
 After=network.target
 
 [Service]
 User=dilab
+Group=dilab
 WorkingDirectory=/home/dilab/DI-LAB/linebot
 Environment="PATH=/home/dilab/DI-LAB/linebot/venv/bin"
-ExecStart=/home/dilab/DI-LAB/linebot/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000
+ExecStart=/home/dilab/DI-LAB/linebot/venv/bin/gunicorn linebot_project.wsgi:application \
+          --bind 127.0.0.1:8000 \
+          --workers 3 \
+          --access-logfile /var/log/linebot_access.log \
+          --error-logfile /var/log/linebot_error.log
 Restart=always
 RestartSec=5
 StandardOutput=journal
@@ -14,4 +19,3 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
-
