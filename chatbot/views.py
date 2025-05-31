@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
-from .models import Message
+from .models import Message, SkipKeyword, SystemPromptRule
 import os
 import openai
 from dotenv import load_dotenv
@@ -53,7 +53,8 @@ def handle_message(event):
     user_id = event.source.user_id
     user_message = event.message.text.strip()
 
-    if user_message.lower() == "你好":
+     # 檢查是否為應跳過的關鍵字
+    if SkipKeyword.objects.filter(text__iexact=user_message).exists():
         return
 
     if user_message.lower() == "/reset":
@@ -72,7 +73,14 @@ def handle_message(event):
 
     add_message(user_id, "user", user_message)
 
-    messages = [{"role": "system", "content": "要簡短回答，不要超過50字，中文要用zh-TW。"}]
+    system_prompt_obj = SystemPromptRule.objects.filter(trigger_text__iexact=user_message).first()
+    if system_prompt_obj:
+        system_prompt = system_prompt_obj.system_prompt
+    else:
+        system_prompt = "要簡短回答，不要超過50字，中文要用zh-TW。"
+
+    messages = [{"role": "system", "content": system_prompt}]
+
     messages += get_user_history(user_id)
 
     try:
