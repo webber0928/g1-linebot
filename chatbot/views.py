@@ -80,24 +80,6 @@ def handle_message(event):
     if user_message.lower().startswith('/lang '):
         new_lang = user_message[6:].strip().lower()
 
-        if new_lang in ['zh', 'en']:
-            if new_lang != line_user.language:
-                line_user.language = new_lang
-                line_user.save()
-                reply = (
-                    "語言已更新為：繁體中文" if new_lang == 'zh'
-                    else "Language updated to: English"
-                )
-            else:
-                reply = (
-                    "你目前已經是繁體中文語系了喔！" if new_lang == 'zh'
-                    else "You're already using English."
-                )
-        else:
-            reply = (
-                "請輸入有效語言代碼：`zh`（繁體中文）或 `en`（English）"
-            )
-
         line_bot_api.reply_message(event.reply_token, TextSendMessage(text=reply))
         return
 
@@ -129,11 +111,11 @@ def handle_message(event):
         latest_msg = Message.objects.filter(user_id=user_id).order_by('-timestamp').first()
         if latest_msg and latest_msg.system_prompt_rule:
             # 取到 SystemPromptRule instance 的 system_prompt
-            system_prompt = latest_msg.system_prompt_rule.system_prompt + '[對話語系] 語系請用' + line_user.language
+            system_prompt = latest_msg.system_prompt_rule.system_prompt
             system_prompt_rule_id = latest_msg.system_prompt_rule.id
         else:
             # 如果沒紀錄，fallback 給一個預設的 prompt
-            system_prompt = '要簡短回答，不要超過50字，對話的語系要用' + line_user.language
+            system_prompt = '要簡短回答，不要超過50字，對話的語系要用zh-tw'
             system_prompt_rule_id = None
         session_id = latest_msg.session_id if latest_msg else uuid.uuid4()
 
