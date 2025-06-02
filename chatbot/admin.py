@@ -1,11 +1,12 @@
 from django.contrib import admin
-from .models import Message, SkipKeyword, SystemPromptRule
+from .models import Message, SkipKeyword, SystemPromptRule, LineUser
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('user_id', 'role', 'content', 'timestamp', 'session_id')
     search_fields = ('user_id', 'content', 'session_id')
     list_filter = ('session_id', 'user_id')
+    ordering = ('-timestamp',)
 
 @admin.register(SkipKeyword)
 class SkipKeywordAdmin(admin.ModelAdmin):
@@ -27,3 +28,11 @@ class SystemPromptRuleAdmin(admin.ModelAdmin):
         if not obj.pk:
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(LineUser)
+class LineUserAdmin(admin.ModelAdmin):
+    list_display = ('user_id', 'language', 'created_at')
+    list_filter = ('language', 'created_at')
+    search_fields = ('user_id',)
+    ordering = ('-created_at',)
