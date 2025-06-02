@@ -33,3 +33,21 @@ class SkipKeyword(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class LineUser(models.Model):
+    LANGUAGE_CHOICES = [
+        ('en', 'English'),
+        ('zh', '中文'),
+    ]
+
+    user_id = models.CharField(max_length=64, primary_key=True)
+    language = models.CharField(
+        max_length=10,
+        choices=LANGUAGE_CHOICES,
+        default='zh'  # 預設為 zh
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user_id} ({self.language})"
