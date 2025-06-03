@@ -9,6 +9,7 @@ import os
 import openai
 import uuid
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 
@@ -50,6 +51,23 @@ def add_message(user_id, role, content, session_id, system_prompt_rule_id=None):
 def clear_history(user_id):
     Message.objects.filter(user_id=user_id).delete()
 
+def send_loading(chat_id, seconds):
+    url = "https://api.line.me/v2/bot/chat/loading/start"
+    headers = {
+        "Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "chatId": chat_id,
+        "loadingSeconds": seconds
+    }
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        if response.status_code != 200:
+            print(f"[!] send_loading 失敗：{response.status_code} - {response.text}")
+    except Exception as e:
+        print(f"[!] send_loading 發生錯誤：{str(e)}")
+
 @csrf_exempt
 def callback(request):
     signature = request.headers.get('X-Line-Signature')
@@ -75,6 +93,9 @@ def handle_message(event):
      # 檢查是否為應跳過的關鍵字
     if SkipKeyword.objects.filter(text__iexact=user_message).exists():
         return
+
+    # 思考動畫
+    send_loading(user_id, 5)
 
     # 語言切換指令
     if user_message.lower().startswith('/lang '):
